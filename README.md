@@ -1,2 +1,2 @@
-**_With the provided code, the results of the the "Local logistic regression for dimension reduction
-in classification" can be reproduced_**
+**_The above provided code can be used to reproduced the results of the paper "Local logistic regression for dimension reduction
+in classification"**
