@@ -177,9 +177,10 @@ for (r in 1:R) {
   # length(train_data$y)
   # length(test_data$y)
   
-  coef.mat_logistic<-fit_class(data=train_data, sample_size = floor(length(train_data$y)/4), lambda = 0, weights = FALSE)
-  lambda_min<-cv.lambda_class_kk(data=train_data,weights = FALSE);lambda_min
-  coef.mat_lasso<-fit_class(data=train_data, sample_size = floor(length(train_data$y)/4), lambda =lambda_min , weights = FALSE)
+  k=round(sqrt(NROW(train_data[, ncol(train_data)])))  + (round(sqrt(NROW(train_data[, ncol(train_data)])))  %% 2 == 0)
+  coef.mat_logistic<-fit_class(data=train_data, sample_size = floor(length(train_data$y)/4), lambda = 0, weights = FALSE,k=k )
+  lambda_min<-cv.lambda_class_kk(data=train_data,weights = FALSE, k=k);lambda_min
+  coef.mat_lasso<-fit_class(data=train_data, sample_size = floor(length(train_data$y)/4), lambda =lambda_min , weights = FALSE, k=k)
   #
   svd_logistic <- svd(coef.mat_logistic)
   svd_lasso <- svd(coef.mat_lasso)
@@ -377,9 +378,10 @@ for (r in 1:R) {
   # length(train_data$y)
   # length(test_data$y)
   
-  coef.mat_logistic<-fit_class(data=train_data, sample_size = floor(length(train_data$y)/4), lambda = 0, weights = FALSE)
-  lambda_min<-cv.lambda_class_kk(data=train_data,weights = FALSE);lambda_min
-  coef.mat_lasso<-fit_class(data=train_data, sample_size = floor(length(train_data$y)/4), lambda =lambda_min , weights = FALSE)
+  k=round(sqrt(NROW(train_data[, ncol(train_data)])))  + (round(sqrt(NROW(train_data[, ncol(train_data)])))  %% 2 == 0)
+  coef.mat_logistic<-fit_class(data=train_data, sample_size = floor(length(train_data$y)/4), lambda = 0, weights = FALSE,k=k )
+  lambda_min<-cv.lambda_class_kk(data=train_data,weights = FALSE, k=k);lambda_min
+  coef.mat_lasso<-fit_class(data=train_data, sample_size = floor(length(train_data$y)/4), lambda =lambda_min , weights = FALSE, k=k)
   #
   svd_logistic <- svd(coef.mat_logistic)
   svd_lasso <- svd(coef.mat_lasso)
@@ -580,9 +582,10 @@ for (r in 1:R) {
   # test_data<- cbind(train_test_splitt$X_test,y= train_test_splitt$y_test ) 
   # length(train_data$y)
   # length(test_data$y)
-  coef.mat_logistic<-fit_class(data=train_data, sample_size = floor(length(train_data$y)/4), lambda = 0, weights = FALSE)
-  lambda_min<-cv.lambda_class_kk(data=train_data,weights = FALSE);lambda_min
-  coef.mat_lasso<-fit_class(data=train_data, sample_size = floor(length(train_data$y)/4), lambda =lambda_min , weights = FALSE)
+  k=round(sqrt(NROW(train_data[, ncol(train_data)])))  + (round(sqrt(NROW(train_data[, ncol(train_data)])))  %% 2 == 0)
+  coef.mat_logistic<-fit_class(data=train_data, sample_size = floor(length(train_data$y)/4), lambda = 0, weights = FALSE,k=k )
+  lambda_min<-cv.lambda_class_kk(data=train_data,weights = FALSE, k=k);lambda_min
+  coef.mat_lasso<-fit_class(data=train_data, sample_size = floor(length(train_data$y)/4), lambda =lambda_min , weights = FALSE, k=k)
   #
   svd_logistic <- svd(coef.mat_logistic)
   svd_lasso <- svd(coef.mat_lasso)
@@ -775,10 +778,10 @@ for (r in 1:R) {
   # test_data<- cbind(train_test_splitt$X_test,y= train_test_splitt$y_test ) 
   # length(train_data$y)
   # length(test_data$y)
-  
-  coef.mat_logistic<-fit_class(data=train_data, sample_size = floor(length(train_data$y)/4), lambda = 0, weights = FALSE)
-  lambda_min<-cv.lambda_class_kk(data=train_data,weights = FALSE);lambda_min
-  coef.mat_lasso<-fit_class(data=train_data, sample_size = floor(length(train_data$y)/4), lambda =lambda_min , weights = FALSE)
+  k=round(sqrt(NROW(train_data[, ncol(train_data)])))  + (round(sqrt(NROW(train_data[, ncol(train_data)])))  %% 2 == 0)
+  coef.mat_logistic<-fit_class(data=train_data, sample_size = floor(length(train_data$y)/4), lambda = 0, weights = FALSE,k=k )
+  lambda_min<-cv.lambda_class_kk(data=train_data,weights = FALSE, k=k);lambda_min
+  coef.mat_lasso<-fit_class(data=train_data, sample_size = floor(length(train_data$y)/4), lambda =lambda_min , weights = FALSE, k=k)
   #
   svd_logistic <- svd(coef.mat_logistic)
   svd_lasso <- svd(coef.mat_lasso)
@@ -979,9 +982,10 @@ for (r in 1:R) {
   # length(train_data$y)
   # length(test_data$y)
   
-  coef.mat_logistic<-fit_class(data=train_data, sample_size = floor(length(train_data$y)/4), lambda = 0, weights = FALSE)
-  lambda_min<-cv.lambda_class_kk(data=train_data,weights = FALSE);lambda_min
-  coef.mat_lasso<-fit_class(data=train_data, sample_size = floor(length(train_data$y)/4), lambda =lambda_min , weights = FALSE)
+  k=round(sqrt(NROW(train_data[, ncol(train_data)])))  + (round(sqrt(NROW(train_data[, ncol(train_data)])))  %% 2 == 0)
+  coef.mat_logistic<-fit_class(data=train_data, sample_size = floor(length(train_data$y)/4), lambda = 0, weights = FALSE,k=k )
+  lambda_min<-cv.lambda_class_kk(data=train_data,weights = FALSE, k=k);lambda_min
+  coef.mat_lasso<-fit_class(data=train_data, sample_size = floor(length(train_data$y)/4), lambda =lambda_min , weights = FALSE, k=k)
   #
   svd_logistic <- svd(coef.mat_logistic)
   svd_lasso <- svd(coef.mat_lasso)
