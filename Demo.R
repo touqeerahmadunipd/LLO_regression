@@ -8,7 +8,7 @@ library(dr)
 library(pbapply)
 library(class)
 
-
+##Function for generating binary response-------
 generate_binary_response <- function(model, X) {
   epsilon <- rnorm(length(X[,1]), 0, 1)  # Generate random noise
   if (model == "I") {
@@ -30,16 +30,12 @@ p<-8
 X <- matrix(rnorm(p * n.size), ncol = p)
 response_I <- generate_binary_response("III", X)
 colnames(X) <- paste0("x", 1:p)
-
 data<- data.frame(X, y=response_I)
-
-# Example of how to access response data for a specific model
-# For example, to access response data for Model I
-data$y <- ifelse(data$y == "-1", 0, data$y)
+data$y <- ifelse(data$y == "-1", 0, data$y) #made y in 0, 1
 data$y<-as.factor(data$y)
 ############
 
-k=round(sqrt(NROW(data[, ncol(data)])))  + (round(sqrt(NROW(data[, ncol(data)])))  %% 2 == 0)
+k=round(sqrt(NROW(data[, ncol(data)])))  + (round(sqrt(NROW(data[, ncol(data)])))  %% 2 == 0) # k=sqrt(n) nearest neighbors
 fit.logistic<-fit_class(data=data, sample_size = floor(length(data$y)/4), lambda = 0, weights = FALSE,k=k )
 lambda_min<-cv.lambda_class_kk(data=data,weights = FALSE, k=k);lambda_min
 fit.lasso<-fit_class(data=data, sample_size = floor(length(data$y)/4), lambda =lambda_min , weights = FALSE, k=k)
@@ -48,7 +44,7 @@ svd_logistic <- svd(fit.logistic)
 svd_lasso <- svd(fit.lasso)
   
   
-#compititors---------
+#competitors---------
 save.fit =dr(data$y~.,data=data[,-ncol(data)], method="save")
 phd.fit = dr(as.numeric(data$y)~.,data=data[,-ncol(data)], method="phdy")
 potd.fit<-potd(X=as.matrix(data[,-ncol(data)]), y=data$y, ndim=ncol(data[,-ncol(data)]))
