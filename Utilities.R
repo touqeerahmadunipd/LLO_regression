@@ -2,10 +2,8 @@
 library(dplyr)
 library(RANN)
 library(glmnet)
-#library(GJRM)
-library(FactoMineR)
 library(caret)
-#library(pROC)
+library(class)
 library(ROCR)
 
 fit_class<-function(data, sample_size, lambda=NA, weights=NA, k=NA){
@@ -91,9 +89,9 @@ cv.lambda_class_kk<- function(data, weights=NA, k=NA){
     w <- ifelse(y == 1, mean(y == 1), 1 - mean(y == 1))
     #
     if(weights==TRUE){
-      suppressWarnings(cv.fit <- cv.glmnet(xx,y,alpha=1,family="binomial",type.measure = "mse", weights = w))
+      suppressWarnings(cv.fit <- cv.glmnet(xx,y,alpha=1,family="binomial",type.measure = "class", weights = w))
     }else{
-      suppressWarnings(cv.fit <- cv.glmnet(xx,y,alpha=1,family="binomial",type.measure = "mse"))
+      suppressWarnings(cv.fit <- cv.glmnet(xx,y,alpha=1,family="binomial",type.measure = "class"))
       
     }
     # plot(cv.fit)
@@ -107,7 +105,6 @@ cv.lambda_class_kk<- function(data, weights=NA, k=NA){
     return(NA)
   }
 }
-
 
 
 #Dimension selection ---------------
@@ -129,7 +126,7 @@ data_fun <- function(data, svd) {
   colnames(test_X) <- paste0("x", 1:ncol(test_X))
   test_data <- cbind(test_X, y = test_y)
   
-  return(list(train_data = train_data, test_data = test_data))
+  return(list(traindata = train_data, testdata = test_data))
 }
 
 
@@ -140,10 +137,15 @@ print_progress <- function(iteration, total) {
   flush.console()
 }
 
-ncomp_selection3<- function(traindata=NA, testdata=NA,cv =NA,model= c("lasso", "logistic"), method=c( "rf", "knn","lvq")){
+ncomp_selection3<- function(data=NA, svd=NA,cv =NA,model= c("lasso", "logistic"), method=c( "rf", "knn","lvq")){
   #browser()
   results <- numeric()  # Define the number of trees for the random forest
   #
+  data_split<- data_fun(data=data, svd = svd)
+  traindata <- data_split$traindata
+  testdata <- data_split$testdata
+  
+  
   train_X<- traindata[,-ncol(traindata)]
   train_y<- traindata[, ncol(traindata)]
   test_X<- testdata[,-ncol(testdata)]
@@ -158,7 +160,7 @@ ncomp_selection3<- function(traindata=NA, testdata=NA,cv =NA,model= c("lasso", "
         rf_model <- randomForest(y ~ ., data = train_dat, ntree = 500, importance = TRUE, proximity = TRUE)
         predict_y <- predict(rf_model, newdata = test_dat, type = "response", norm.votes = TRUE)
       }else if(cv==TRUE){
-        rf_model <- train(y~.,data=train_dat, method='rf', trControl = trainControl(method = "cv", number = 10,, repeats = 3),prox = TRUE)
+        rf_model <- train(y~.,data=train_dat, method='rf', trControl = trainControl(method = "cv", number = 10, repeats = 3),prox = TRUE)
         predict_y <- predict(object=rf_model,newdata=test_dat)
       }
     }else if(method=="knn"){
@@ -183,7 +185,7 @@ ncomp_selection3<- function(traindata=NA, testdata=NA,cv =NA,model= c("lasso", "
   if(method %in%c("rf", "knn", "lvq")){
     #print(results)
     if(model=="logistic"){
-      plot(results, type="l", ylab="Accuracy", xlab="Number of components", main=expression(paste(" Components selected via LLO(", lambda, "= 0)")), lwd=2 )
+      plot(results, type="l", ylab="Accuracy", xlab="Dimensions", main=expression(paste(" Components selected via LLO(", lambda, "= 0)")), lwd=2 )
       #For grid---------------------
       rect(par("usr")[1], par("usr")[3],
            par("usr")[2], par("usr")[4],
@@ -197,7 +199,7 @@ ncomp_selection3<- function(traindata=NA, testdata=NA,cv =NA,model= c("lasso", "
       abline(v=desired_components, lty=2, col="red")
       return(desired_components)
     } else if(model=="lasso"){
-      plot(results, type="l", ylab="Accuracy", xlab="Number of components", main=expression(paste("Components selected via LLO(", lambda, "> 0)")), lwd=2 )
+      plot(results, type="l", ylab="Accuracy", xlab="Dimensions", main=expression(paste("Components selected via LLO(", lambda, "> 0)")), lwd=2 )
       #For grid---------------------
       rect(par("usr")[1], par("usr")[3],
            par("usr")[2], par("usr")[4],
@@ -213,6 +215,80 @@ ncomp_selection3<- function(traindata=NA, testdata=NA,cv =NA,model= c("lasso", "
     }
   }
 }
+
+# ncomp_selection3<- function(traindata=NA, testdata=NA,cv =NA,model= c("lasso", "logistic"), method=c( "rf", "knn","lvq")){
+#   #browser()
+#   results <- numeric()  # Define the number of trees for the random forest
+#   #
+#   train_X<- traindata[,-ncol(traindata)]
+#   train_y<- traindata[, ncol(traindata)]
+#   test_X<- testdata[,-ncol(testdata)]
+#   test_y<- testdata[, ncol(testdata)]
+#   N<- length(traindata[,-ncol(traindata)])
+#   for (i in 1:N){
+#     train_dat<- cbind(train_X[1:i], y=train_y)
+#     test_dat <- test_X[1:i]
+#     #print(head(test_dat))
+#     if(method=="rf"){
+#       if(cv==FALSE){
+#         rf_model <- randomForest(y ~ ., data = train_dat, ntree = 500, importance = TRUE, proximity = TRUE)
+#         predict_y <- predict(rf_model, newdata = test_dat, type = "response", norm.votes = TRUE)
+#       }else if(cv==TRUE){
+#         rf_model <- train(y~.,data=train_dat, method='rf', trControl = trainControl(method = "cv", number = 10,, repeats = 3),prox = TRUE)
+#         predict_y <- predict(object=rf_model,newdata=test_dat)
+#       }
+#     }else if(method=="knn"){
+#       k <- round(sqrt(NROW(train_dat[, ncol(train_dat)])))  + (round(sqrt(NROW(train_dat[, ncol(train_dat)])))  %% 2 == 0)
+#       knn_model <- train(y ~ ., data = train_dat, method = "knn", trControl = trainControl(method = "repeatedcv", number = 5, repeats = 3),  tuneGrid = expand.grid(k = k))
+#       predict_y <- predict(knn_model, newdata = test_dat)
+#     }else if(method=="lvq"){
+#       lvq_model <- train(y~., data=train_dat, method="lvq", preProcess="scale", trControl=trainControl(method="repeatedcv", number=5, repeats = 3))
+#       predict_y <- predict(lvq_model, newdata = test_dat)
+#       
+#     }
+#     # ## Print the accuracy
+#     accuracy <- mean(predict_y == test_y)
+#     #print(accuracy)
+#     results[i] <- accuracy
+#     #print(results)
+#     
+#     #print(results)
+#     print_progress(i, N)
+#   }
+#   
+#   if(method %in%c("rf", "knn", "lvq")){
+#     #print(results)
+#     if(model=="logistic"){
+#       plot(results, type="l", ylab="Accuracy", xlab="Number of components", main=expression(paste(" Components selected via LLO(", lambda, "= 0)")), lwd=2 )
+#       #For grid---------------------
+#       rect(par("usr")[1], par("usr")[3],
+#            par("usr")[2], par("usr")[4],
+#            col = "#ebebeb")
+#       # Add white grid
+#       grid(nx = NULL, ny = NULL,
+#            col = "white", lwd = 1)
+#       
+#       lines(results, type="l", lwd=2 )
+#       desired_components <- which.max(results)[1]
+#       abline(v=desired_components, lty=2, col="red")
+#       return(desired_components)
+#     } else if(model=="lasso"){
+#       plot(results, type="l", ylab="Accuracy", xlab="Number of components", main=expression(paste("Components selected via LLO(", lambda, "> 0)")), lwd=2 )
+#       #For grid---------------------
+#       rect(par("usr")[1], par("usr")[3],
+#            par("usr")[2], par("usr")[4],
+#            col = "#ebebeb")
+#       # Add white grid
+#       grid(nx = NULL, ny = NULL,
+#            col = "white", lwd = 1)
+#       
+#       lines(results, type="l" , lwd=2)
+#       desired_components <- which.max(results)[1]
+#       abline(v=desired_components, lty=2, col="red")
+#       return(desired_components)
+#     }
+#   }
+# }
 
 # # Usage
 # result <- data_fun(data=data1, svd=svd_logistic)
