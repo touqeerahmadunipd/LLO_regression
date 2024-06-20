@@ -87,7 +87,7 @@ svd_lasso <- svd(coef.mat_lasso)
 Vk_logistic <- svd_logistic$v
 Vk_lasso <- svd_lasso$v
 
-#data projection to new subspace 
+#data projection to full new subspace 
 x_train_transformed_logistic_full<-as.matrix(train_data[, -ncol(train_data)]) %*% Vk_logistic  
 colnames(x_train_transformed_logistic_full) <- paste0("x", 1:ncol(x_train_transformed_logistic_full))
 train_transformed_logistic_full<- data.frame(x_train_transformed_logistic_full, y=train_data$y)
@@ -106,10 +106,19 @@ colnames(x_test_transformed_lasso_full) <- paste0("x", 1:ncol(x_test_transformed
 test_transformed_lasso_full<- data.frame(x_test_transformed_lasso_full, y=test_data$y)
 
 ###Dimension selection----------------------------------------------------------------
-desired_components_logistic<-ncomp_selection3(traindata=train_transformed_logistic_full, testdata=test_transformed_logistic_full,model= c("logistic"), method=c("knn"),cv=TRUE)
-desired_components_lasso<-ncomp_selection3(traindata=train_transformed_lasso_full, testdata=test_transformed_lasso_full,model= c("lasso"), method=c("knn"),cv=TRUE)
+desired_components_logistic<-ncomp_selection3(data=train_data, svd=svd_logistic,cv =NA,model= c("logistic"), method=c( "knn"))
+desired_components_lasso<-ncomp_selection3(data=train_data, svd=svd_lasso,cv =NA,model= c("lasso"), method=c( "knn"))
 print(paste("Desired number of components for logistic case:", desired_components_logistic))
 print(paste("Desired number of components for lasso case:", desired_components_lasso))
+
+
+
+
+
+# desired_components_logistic<-ncomp_selection3(traindata=train_transformed_logistic_full, testdata=test_transformed_logistic_full,model= c("logistic"), method=c("knn"),cv=TRUE)
+# desired_components_lasso<-ncomp_selection3(traindata=train_transformed_lasso_full, testdata=test_transformed_lasso_full,model= c("lasso"), method=c("knn"),cv=TRUE)
+# print(paste("Desired number of components for logistic case:", desired_components_logistic))
+# print(paste("Desired number of components for lasso case:", desired_components_lasso))
 
 #
 Vk_logistic <- svd_logistic$v[, 1:desired_components_logistic]
@@ -314,11 +323,17 @@ paste(round(c( AM_knn[5], MC_knn[5], AUC_knn[5],knn_time.taken[5]),3), collapse 
 
 #Random forest-----------------------------------------------------------------
 ntree=500
-desired_components_logistic<-ncomp_selection3(traindata=train_transformed_logistic_full, testdata=test_transformed_logistic_full,model= c("logistic"), method=c("rf"),cv=TRUE)
-desired_components_lasso<-ncomp_selection3(traindata=train_transformed_lasso_full, testdata=test_transformed_lasso_full,model= c("lasso"), method=c("rf"),cv=TRUE)
+#Dimention selection throug RF----------------------------
+desired_components_logistic<-ncomp_selection3(data=train_data, svd=svd_logistic,cv =TRUE,model= c("logistic"), method=c( "rf"))
+desired_components_lasso<-ncomp_selection3(data=train_data, svd=svd_lasso,cv =TRUE,model= c("lasso"), method=c( "rf"))
 print(paste("Desired number of components for logistic case:", desired_components_logistic))
 print(paste("Desired number of components for lasso case:", desired_components_lasso))
-
+# 
+# desired_components_logistic<-ncomp_selection3(traindata=train_transformed_logistic_full, testdata=test_transformed_logistic_full,model= c("logistic"), method=c("rf"),cv=TRUE)
+# desired_components_lasso<-ncomp_selection3(traindata=train_transformed_lasso_full, testdata=test_transformed_lasso_full,model= c("lasso"), method=c("rf"),cv=TRUE)
+# print(paste("Desired number of components for logistic case:", desired_components_logistic))
+# print(paste("Desired number of components for lasso case:", desired_components_lasso))
+# 
 
 #k <-desired_components  # Number of selected components
 Vk_logistic <- svd_logistic$v[, 1:desired_components_logistic]
@@ -682,7 +697,7 @@ svd_lasso <- svd(coef.mat_lasso)
 Vk_logistic <- svd_logistic$v
 Vk_lasso <- svd_lasso$v
 
-#data for prediction-----------------------------------------------------
+#data for project to full new subspace-----------------------------------------------------
 x_train_transformed_logistic_full<-as.matrix(train_data[, -ncol(train_data)]) %*% Vk_logistic
 colnames(x_train_transformed_logistic_full) <- paste0("x", 1:ncol(x_train_transformed_logistic_full))
 train_transformed_logistic_full<- data.frame(x_train_transformed_logistic_full, y=train_data$y)
@@ -700,11 +715,17 @@ x_test_transformed_lasso_full<-as.matrix(test_data[, -ncol(test_data)]) %*% Vk_l
 colnames(x_test_transformed_lasso_full) <- paste0("x", 1:ncol(x_test_transformed_lasso_full))
 test_transformed_lasso_full<- data.frame(x_test_transformed_lasso_full, y=test_data$y)
 
-
-desired_components_logistic<-ncomp_selection3(traindata=train_transformed_logistic_full, testdata=test_transformed_logistic_full,model= c("logistic"), method=c("knn"),cv=TRUE)
-desired_components_lasso<-ncomp_selection3(traindata=train_transformed_lasso_full, testdata=test_transformed_lasso_full,model= c("lasso"), method=c("knn"),cv=TRUE)
+#Dimension selection----------------------------
+desired_components_logistic<-ncomp_selection3(data=train_data, svd=svd_logistic,cv =TRUE,model= c("logistic"), method=c( "knn"))
+desired_components_lasso<-ncomp_selection3(data=train_data, svd=svd_lasso,cv =TRUE,model= c("lasso"), method=c( "knn"))
 print(paste("Desired number of components for logistic case:", desired_components_logistic))
 print(paste("Desired number of components for lasso case:", desired_components_lasso))
+
+
+# desired_components_logistic<-ncomp_selection3(traindata=train_transformed_logistic_full, testdata=test_transformed_logistic_full,model= c("logistic"), method=c("knn"),cv=TRUE)
+# desired_components_lasso<-ncomp_selection3(traindata=train_transformed_lasso_full, testdata=test_transformed_lasso_full,model= c("lasso"), method=c("knn"),cv=TRUE)
+# print(paste("Desired number of components for logistic case:", desired_components_logistic))
+# print(paste("Desired number of components for lasso case:", desired_components_lasso))
 
 
 #k <-desired_components  # Number of selected components
@@ -914,10 +935,15 @@ paste(round(c( AM_knn[5], MC_knn[5], AUC_knn[5],knn_time.taken[5]),3), collapse 
 
 #Random forest-----------------------------------------------------------------
 ntree=500
-desired_components_logistic<-ncomp_selection3(traindata=train_transformed_logistic_full, testdata=test_transformed_logistic_full,model= c("logistic"), method=c("rf"),cv=FALSE)
-desired_components_lasso<-ncomp_selection3(traindata=train_transformed_lasso_full, testdata=test_transformed_lasso_full,model= c("lasso"), method=c("rf"),cv=FALSE)
+#Dimention selection throug RF----------------------------
+desired_components_logistic<-ncomp_selection3(data=train_data, svd=svd_logistic,cv =TRUE,model= c("logistic"), method=c( "rf"))
+desired_components_lasso<-ncomp_selection3(data=train_data, svd=svd_lasso,cv =TRUE,model= c("lasso"), method=c( "rf"))
 print(paste("Desired number of components for logistic case:", desired_components_logistic))
 print(paste("Desired number of components for lasso case:", desired_components_lasso))
+# desired_components_logistic<-ncomp_selection3(traindata=train_transformed_logistic_full, testdata=test_transformed_logistic_full,model= c("logistic"), method=c("rf"),cv=FALSE)
+# desired_components_lasso<-ncomp_selection3(traindata=train_transformed_lasso_full, testdata=test_transformed_lasso_full,model= c("lasso"), method=c("rf"),cv=FALSE)
+# print(paste("Desired number of components for logistic case:", desired_components_logistic))
+# print(paste("Desired number of components for lasso case:", desired_components_lasso))
 
 
 #k <-desired_components  # Number of selected components
@@ -1285,7 +1311,7 @@ svd_lasso <- svd(coef.mat_lasso)
 Vk_logistic <- svd_logistic$v
 Vk_lasso <- svd_lasso$v
 
-#data for prediction-----------------------------------------------------
+#data project to full new subspace-----------------------------------------------------
 x_train_transformed_logistic_full<-as.matrix(train_data[, -ncol(train_data)]) %*% Vk_logistic
 colnames(x_train_transformed_logistic_full) <- paste0("x", 1:ncol(x_train_transformed_logistic_full))
 train_transformed_logistic_full<- data.frame(x_train_transformed_logistic_full, y=train_data$y)
@@ -1303,11 +1329,15 @@ x_test_transformed_lasso_full<-as.matrix(test_data[, -ncol(test_data)]) %*% Vk_l
 colnames(x_test_transformed_lasso_full) <- paste0("x", 1:ncol(x_test_transformed_lasso_full))
 test_transformed_lasso_full<- data.frame(x_test_transformed_lasso_full, y=test_data$y)
 
-
-desired_components_logistic<-ncomp_selection3(traindata=train_transformed_logistic_full, testdata=test_transformed_logistic_full,model= c("logistic"), method=c("knn"),cv=FALSE)
-desired_components_lasso<-ncomp_selection3(traindata=train_transformed_lasso_full, testdata=test_transformed_lasso_full,model= c("lasso"), method=c("knn"),cv=FALSE)
+#Dimention selection----------------------------
+desired_components_logistic<-ncomp_selection3(data=train_data, svd=svd_logistic,cv =TRUE,model= c("logistic"), method=c( "knn"))
+desired_components_lasso<-ncomp_selection3(data=train_data, svd=svd_lasso,cv =TRUE,model= c("lasso"), method=c( "knn"))
 print(paste("Desired number of components for logistic case:", desired_components_logistic))
 print(paste("Desired number of components for lasso case:", desired_components_lasso))
+# desired_components_logistic<-ncomp_selection3(traindata=train_transformed_logistic_full, testdata=test_transformed_logistic_full,model= c("logistic"), method=c("knn"),cv=FALSE)
+# desired_components_lasso<-ncomp_selection3(traindata=train_transformed_lasso_full, testdata=test_transformed_lasso_full,model= c("lasso"), method=c("knn"),cv=FALSE)
+# print(paste("Desired number of components for logistic case:", desired_components_logistic))
+# print(paste("Desired number of components for lasso case:", desired_components_lasso))
 
 
 #k <-desired_components  # Number of selected components
@@ -1517,7 +1547,13 @@ paste(round(c( AM_knn[5], MC_knn[5], AUC_knn[5],knn_time.taken[5]),3), collapse 
 
 
 
-#Random forest-----------------------------------------------------------------
+#Dimention selection throug RF----------------------------
+desired_components_logistic<-ncomp_selection3(data=train_data, svd=svd_logistic,cv =TRUE,model= c("logistic"), method=c( "rf"))
+desired_components_lasso<-ncomp_selection3(data=train_data, svd=svd_lasso,cv =TRUE,model= c("lasso"), method=c( "rf"))
+print(paste("Desired number of components for logistic case:", desired_components_logistic))
+print(paste("Desired number of components for lasso case:", desired_components_lasso))
+
+
 
 desired_components_logistic<-ncomp_selection3(traindata=train_transformed_logistic_full, testdata=test_transformed_logistic_full,model= c("logistic"), method=c("rf"),cv=FALSE)
 desired_components_lasso<-ncomp_selection3(traindata=train_transformed_lasso_full, testdata=test_transformed_lasso_full,model= c("lasso"), method=c("rf"),cv=FALSE)
