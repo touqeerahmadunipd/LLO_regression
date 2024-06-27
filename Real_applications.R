@@ -65,12 +65,6 @@ axis(1, at = 1:length(variables), labels = variables)
 counts_lasso <- sapply(df_lasso, count_nonzero) # Apply the count_nonzero function to each column of the data frame
 variables <- colnames(df_lasso)
 lines(counts_lasso,type = "o", col="red")
-# legend("topright", legend = c("LLO", "Lasso"),
-#        col = c("black", "red","blue", "orange"), lty = 1, pch = 1)
-#par( mfrow=c(1, 1)) 
-# legend(10,200, legend = c(expression(paste("LLO(",lambda,"=",0)), expression(paste("LLO(", lambda,">",0))),
-#        col = c("black", "red","blue", "orange"), lty = 1, pch = 1,
-#        x.intersp = 0.5)
 
 
 
@@ -106,20 +100,32 @@ colnames(x_test_transformed_lasso_full) <- paste0("x", 1:ncol(x_test_transformed
 test_transformed_lasso_full<- data.frame(x_test_transformed_lasso_full, y=test_data$y)
 
 ###Dimension selection----------------------------------------------------------------
-desired_components_logistic<-ncomp_selection3(data=train_data, svd=svd_logistic,cv =NA,model= c("logistic"), method=c( "knn"))
-desired_components_lasso<-ncomp_selection3(data=train_data, svd=svd_lasso,cv =NA,model= c("lasso"), method=c( "knn"))
-print(paste("Desired number of components for logistic case:", desired_components_logistic))
-print(paste("Desired number of components for lasso case:", desired_components_lasso))
 
+dimensions_logistic<-ncomp_selection3(traindata=train_transformed_logistic_full, testdata=test_transformed_logistic_full, method=c("knn"),cv=TRUE)
+dimensions_lasso<-ncomp_selection3(traindata=train_transformed_lasso_full, testdata=test_transformed_lasso_full, method=c("knn"),cv=TRUE)
+plot(dimensions_logistic, type="l",ylim=c(min(dimensions_lasso),0.9) ,ylab="Accuracy", xlab="Dimensions", main="Dimension selection for HV data", lwd=2 )
+ #For grid---------------------
+ rect(par("usr")[1], par("usr")[3],
+      par("usr")[2], par("usr")[4],
+      col = "#ebebeb")
+ # Add white grid
+ grid(nx = NULL, ny = NULL,
+      col = "white", lwd = 1)
+ 
+ lines(dimensions_logistic, type="l", lwd=2 , col="black")
+ desired_components_logistic <- which.max(dimensions_logistic)[1]
+ abline(v=desired_components_logistic, lty=2, col="black")
+#lasso
+lines(dimensions_lasso, type="l" , lwd=2, col="red")
+desired_components_lasso <- which.max(dimensions_lasso)[1]
+abline(v=desired_components_lasso, lty=2, col="red")
+legend("topleft", 
+       legend = c(expression(paste("LLO(", lambda, "= 0)")), 
+                  expression(paste("LLO(", lambda, "> 0)"))),
+       col = c("black", "red"), lty = 1, lwd = 2,  bty='n', inset=c(0.65, 0.01))
 
-
-
-
-# desired_components_logistic<-ncomp_selection3(traindata=train_transformed_logistic_full, testdata=test_transformed_logistic_full,model= c("logistic"), method=c("knn"),cv=TRUE)
-# desired_components_lasso<-ncomp_selection3(traindata=train_transformed_lasso_full, testdata=test_transformed_lasso_full,model= c("lasso"), method=c("knn"),cv=TRUE)
-# print(paste("Desired number of components for logistic case:", desired_components_logistic))
-# print(paste("Desired number of components for lasso case:", desired_components_lasso))
-
+ 
+ 
 #
 Vk_logistic <- svd_logistic$v[, 1:desired_components_logistic]
 Vk_lasso <- svd_lasso$v[, 1:desired_components_lasso]
@@ -324,16 +330,30 @@ paste(round(c( AM_knn[5], MC_knn[5], AUC_knn[5],knn_time.taken[5]),3), collapse 
 #Random forest-----------------------------------------------------------------
 ntree=500
 #Dimention selection throug RF----------------------------
-desired_components_logistic<-ncomp_selection3(data=train_data, svd=svd_logistic,cv =TRUE,model= c("logistic"), method=c( "rf"))
-desired_components_lasso<-ncomp_selection3(data=train_data, svd=svd_lasso,cv =TRUE,model= c("lasso"), method=c( "rf"))
-print(paste("Desired number of components for logistic case:", desired_components_logistic))
-print(paste("Desired number of components for lasso case:", desired_components_lasso))
-# 
-# desired_components_logistic<-ncomp_selection3(traindata=train_transformed_logistic_full, testdata=test_transformed_logistic_full,model= c("logistic"), method=c("rf"),cv=TRUE)
-# desired_components_lasso<-ncomp_selection3(traindata=train_transformed_lasso_full, testdata=test_transformed_lasso_full,model= c("lasso"), method=c("rf"),cv=TRUE)
-# print(paste("Desired number of components for logistic case:", desired_components_logistic))
-# print(paste("Desired number of components for lasso case:", desired_components_lasso))
-# 
+dimensions_logistic<-ncomp_selection3(traindata=train_transformed_logistic_full, testdata=test_transformed_logistic_full, method=c("rf"),cv=TRUE)
+dimensions_lasso<-ncomp_selection3(traindata=train_transformed_lasso_full, testdata=test_transformed_lasso_full, method=c("rf"),cv=TRUE)
+plot(dimensions_logistic, type="l",ylim=c(min(dimensions_lasso),0.9) ,ylab="Accuracy", xlab="Dimensions", main="Dimension selection for HV data", lwd=2 )
+#For grid---------------------
+rect(par("usr")[1], par("usr")[3],
+     par("usr")[2], par("usr")[4],
+     col = "#ebebeb")
+# Add white grid
+grid(nx = NULL, ny = NULL,
+     col = "white", lwd = 1)
+
+lines(dimensions_logistic, type="l", lwd=2 , col="black")
+desired_components_logistic <- which.max(dimensions_logistic)[1]
+abline(v=desired_components_logistic, lty=2, col="black")
+#lasso
+lines(dimensions_lasso, type="l" , lwd=2, col="red")
+desired_components_lasso <- which.max(dimensions_lasso)[1]
+abline(v=desired_components_lasso, lty=2, col="red")
+legend("topleft", 
+       legend = c(expression(paste("LLO(", lambda, "= 0)")), 
+                  expression(paste("LLO(", lambda, "> 0)"))),
+       col = c("black", "red"), lty = 1, lwd = 2,  bty='n', inset=c(0.65, 0.01))
+
+
 
 #k <-desired_components  # Number of selected components
 Vk_logistic <- svd_logistic$v[, 1:desired_components_logistic]
@@ -716,16 +736,29 @@ colnames(x_test_transformed_lasso_full) <- paste0("x", 1:ncol(x_test_transformed
 test_transformed_lasso_full<- data.frame(x_test_transformed_lasso_full, y=test_data$y)
 
 #Dimension selection----------------------------
-desired_components_logistic<-ncomp_selection3(data=train_data, svd=svd_logistic,cv =TRUE,model= c("logistic"), method=c( "knn"))
-desired_components_lasso<-ncomp_selection3(data=train_data, svd=svd_lasso,cv =TRUE,model= c("lasso"), method=c( "knn"))
-print(paste("Desired number of components for logistic case:", desired_components_logistic))
-print(paste("Desired number of components for lasso case:", desired_components_lasso))
+dimensions_logistic<-ncomp_selection3(traindata=train_transformed_logistic_full, testdata=test_transformed_logistic_full, method=c("knn"),cv=TRUE)
+dimensions_lasso<-ncomp_selection3(traindata=train_transformed_lasso_full, testdata=test_transformed_lasso_full, method=c("knn"),cv=TRUE)
+plot(dimensions_logistic, type="l",ylim=c(0.88,1) ,ylab="Accuracy", xlab="Dimensions", main="Dimension selection for HV data", lwd=2 )
+#For grid---------------------
+rect(par("usr")[1], par("usr")[3],
+     par("usr")[2], par("usr")[4],
+     col = "#ebebeb")
+# Add white grid
+grid(nx = NULL, ny = NULL,
+     col = "white", lwd = 1)
 
+lines(dimensions_logistic, type="l", lwd=2 , col="black")
+desired_components_logistic <- which.max(dimensions_logistic)[1]
+abline(v=desired_components_logistic, lty=2, col="black")
+#lasso
+lines(dimensions_lasso, type="l" , lwd=2, col="red")
+desired_components_lasso <- which.max(dimensions_lasso)[1]
+abline(v=desired_components_lasso, lty=2, col="red")
+legend("topleft", 
+       legend = c(expression(paste("LLO(", lambda, "= 0)")), 
+                  expression(paste("LLO(", lambda, "> 0)"))),
+       col = c("black", "red"), lty = 1, lwd = 2,  bty='n', inset=c(0.65, 0.01))
 
-# desired_components_logistic<-ncomp_selection3(traindata=train_transformed_logistic_full, testdata=test_transformed_logistic_full,model= c("logistic"), method=c("knn"),cv=TRUE)
-# desired_components_lasso<-ncomp_selection3(traindata=train_transformed_lasso_full, testdata=test_transformed_lasso_full,model= c("lasso"), method=c("knn"),cv=TRUE)
-# print(paste("Desired number of components for logistic case:", desired_components_logistic))
-# print(paste("Desired number of components for lasso case:", desired_components_lasso))
 
 
 #k <-desired_components  # Number of selected components
@@ -936,14 +969,29 @@ paste(round(c( AM_knn[5], MC_knn[5], AUC_knn[5],knn_time.taken[5]),3), collapse 
 #Random forest-----------------------------------------------------------------
 ntree=500
 #Dimention selection throug RF----------------------------
-desired_components_logistic<-ncomp_selection3(data=train_data, svd=svd_logistic,cv =TRUE,model= c("logistic"), method=c( "rf"))
-desired_components_lasso<-ncomp_selection3(data=train_data, svd=svd_lasso,cv =TRUE,model= c("lasso"), method=c( "rf"))
-print(paste("Desired number of components for logistic case:", desired_components_logistic))
-print(paste("Desired number of components for lasso case:", desired_components_lasso))
-# desired_components_logistic<-ncomp_selection3(traindata=train_transformed_logistic_full, testdata=test_transformed_logistic_full,model= c("logistic"), method=c("rf"),cv=FALSE)
-# desired_components_lasso<-ncomp_selection3(traindata=train_transformed_lasso_full, testdata=test_transformed_lasso_full,model= c("lasso"), method=c("rf"),cv=FALSE)
-# print(paste("Desired number of components for logistic case:", desired_components_logistic))
-# print(paste("Desired number of components for lasso case:", desired_components_lasso))
+dimensions_logistic<-ncomp_selection3(traindata=train_transformed_logistic_full, testdata=test_transformed_logistic_full, method=c("rf"),cv=TRUE)
+dimensions_lasso<-ncomp_selection3(traindata=train_transformed_lasso_full, testdata=test_transformed_lasso_full, method=c("rf"),cv=TRUE)
+plot(dimensions_logistic, type="l",ylim=c(0.88,1) ,ylab="Accuracy", xlab="Dimensions", main="Dimension selection for HV data", lwd=2 )
+#For grid---------------------
+rect(par("usr")[1], par("usr")[3],
+     par("usr")[2], par("usr")[4],
+     col = "#ebebeb")
+# Add white grid
+grid(nx = NULL, ny = NULL,
+     col = "white", lwd = 1)
+
+lines(dimensions_logistic, type="l", lwd=2 , col="black")
+desired_components_logistic <- which.max(dimensions_logistic)[1]
+abline(v=desired_components_logistic, lty=2, col="black")
+#lasso
+lines(dimensions_lasso, type="l" , lwd=2, col="red")
+desired_components_lasso <- which.max(dimensions_lasso)[1]
+abline(v=desired_components_lasso, lty=2, col="red")
+legend("topleft", 
+       legend = c(expression(paste("LLO(", lambda, "= 0)")), 
+                  expression(paste("LLO(", lambda, "> 0)"))),
+       col = c("black", "red"), lty = 1, lwd = 2,  bty='n', inset=c(0.65, 0.01))
+
 
 
 #k <-desired_components  # Number of selected components
@@ -1330,14 +1378,28 @@ colnames(x_test_transformed_lasso_full) <- paste0("x", 1:ncol(x_test_transformed
 test_transformed_lasso_full<- data.frame(x_test_transformed_lasso_full, y=test_data$y)
 
 #Dimention selection----------------------------
-desired_components_logistic<-ncomp_selection3(data=train_data, svd=svd_logistic,cv =TRUE,model= c("logistic"), method=c( "knn"))
-desired_components_lasso<-ncomp_selection3(data=train_data, svd=svd_lasso,cv =TRUE,model= c("lasso"), method=c( "knn"))
-print(paste("Desired number of components for logistic case:", desired_components_logistic))
-print(paste("Desired number of components for lasso case:", desired_components_lasso))
-# desired_components_logistic<-ncomp_selection3(traindata=train_transformed_logistic_full, testdata=test_transformed_logistic_full,model= c("logistic"), method=c("knn"),cv=FALSE)
-# desired_components_lasso<-ncomp_selection3(traindata=train_transformed_lasso_full, testdata=test_transformed_lasso_full,model= c("lasso"), method=c("knn"),cv=FALSE)
-# print(paste("Desired number of components for logistic case:", desired_components_logistic))
-# print(paste("Desired number of components for lasso case:", desired_components_lasso))
+dimensions_logistic<-ncomp_selection3(traindata=train_transformed_logistic_full, testdata=test_transformed_logistic_full, method=c("knn"),cv=TRUE)
+dimensions_lasso<-ncomp_selection3(traindata=train_transformed_lasso_full, testdata=test_transformed_lasso_full, method=c("knn"),cv=TRUE)
+plot(dimensions_logistic, type="l",ylim=c(0.7,1) ,ylab="Accuracy", xlab="Dimensions", main="Dimension selection for HV data", lwd=2 )
+#For grid---------------------
+rect(par("usr")[1], par("usr")[3],
+     par("usr")[2], par("usr")[4],
+     col = "#ebebeb")
+# Add white grid
+grid(nx = NULL, ny = NULL,
+     col = "white", lwd = 1)
+
+lines(dimensions_logistic, type="l", lwd=2 , col="black")
+desired_components_logistic <- which.max(dimensions_logistic)[1]
+abline(v=desired_components_logistic, lty=2, col="black")
+#lasso
+lines(dimensions_lasso, type="l" , lwd=2, col="red")
+desired_components_lasso <- which.max(dimensions_lasso)[1]
+abline(v=desired_components_lasso, lty=2, col="red")
+legend("topleft", 
+       legend = c(expression(paste("LLO(", lambda, "= 0)")), 
+                  expression(paste("LLO(", lambda, "> 0)"))),
+       col = c("black", "red"), lty = 1, lwd = 2,  bty='n', inset=c(0.65, 0.01))
 
 
 #k <-desired_components  # Number of selected components
@@ -1548,17 +1610,30 @@ paste(round(c( AM_knn[5], MC_knn[5], AUC_knn[5],knn_time.taken[5]),3), collapse 
 
 
 #Dimention selection throug RF----------------------------
-desired_components_logistic<-ncomp_selection3(data=train_data, svd=svd_logistic,cv =TRUE,model= c("logistic"), method=c( "rf"))
-desired_components_lasso<-ncomp_selection3(data=train_data, svd=svd_lasso,cv =TRUE,model= c("lasso"), method=c( "rf"))
-print(paste("Desired number of components for logistic case:", desired_components_logistic))
-print(paste("Desired number of components for lasso case:", desired_components_lasso))
+dimensions_logistic<-ncomp_selection3(traindata=train_transformed_logistic_full, testdata=test_transformed_logistic_full, method=c("rf"),cv=TRUE)
+dimensions_lasso<-ncomp_selection3(traindata=train_transformed_lasso_full, testdata=test_transformed_lasso_full, method=c("rf"),cv=TRUE)
+plot(dimensions_logistic, type="l",ylim=c(0.7,1) ,ylab="Accuracy", xlab="Dimensions", main="Dimension selection for HV data", lwd=2 )
+#For grid---------------------
+rect(par("usr")[1], par("usr")[3],
+     par("usr")[2], par("usr")[4],
+     col = "#ebebeb")
+# Add white grid
+grid(nx = NULL, ny = NULL,
+     col = "white", lwd = 1)
+
+lines(dimensions_logistic, type="l", lwd=2 , col="black")
+desired_components_logistic <- which.max(dimensions_logistic)[1]
+abline(v=desired_components_logistic, lty=2, col="black")
+#lasso
+lines(dimensions_lasso, type="l" , lwd=2, col="red")
+desired_components_lasso <- which.max(dimensions_lasso)[1]
+abline(v=desired_components_lasso, lty=2, col="red")
+legend("topleft", 
+       legend = c(expression(paste("LLO(", lambda, "= 0)")), 
+                  expression(paste("LLO(", lambda, "> 0)"))),
+       col = c("black", "red"), lty = 1, lwd = 2,  bty='n', inset=c(0.65, 0.01))
 
 
-
-desired_components_logistic<-ncomp_selection3(traindata=train_transformed_logistic_full, testdata=test_transformed_logistic_full,model= c("logistic"), method=c("rf"),cv=FALSE)
-desired_components_lasso<-ncomp_selection3(traindata=train_transformed_lasso_full, testdata=test_transformed_lasso_full,model= c("lasso"), method=c("rf"),cv=FALSE)
-print(paste("Desired number of components for logistic case:", desired_components_logistic))
-print(paste("Desired number of components for lasso case:", desired_components_lasso))
 
 
 #k <-desired_components  # Number of selected components
